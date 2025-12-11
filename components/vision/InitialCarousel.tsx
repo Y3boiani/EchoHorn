@@ -25,14 +25,15 @@ const InitialCarousel: FC<InitialCarouselProps> = React.memo(({ onSelectVision, 
             key={vision.id}
             layoutId={`vision-card-${vision.id}`}
             onClick={() => onSelectVision(vision.id)}
-            className="cursor-pointer rounded-full overflow-hidden"
+            data-testid={`vision-card-${vision.id}`}
+            className="cursor-pointer rounded-full overflow-hidden relative group"
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1, width: size, height: size }}
             transition={{ delay: index * 0.1, type: 'spring', stiffness: 100 }}
             whileHover={{ y: -15, scale: 1.05, rotate: isCenterImage ? 0 : (index % 2 === 0 ? -5 : 5), zIndex: 10 }}
           >
             <motion.div
-              className="w-full h-full"
+              className="w-full h-full relative"
               style={{ opacity: selectedId ? 0 : (isCenterImage ? 1 : 0.6) }}
               whileHover={{ opacity: 1 }}
             >
@@ -42,7 +43,14 @@ const InitialCarousel: FC<InitialCarouselProps> = React.memo(({ onSelectVision, 
                 width={size}
                 height={size}
                 className="object-cover w-full h-full"
-                priority={isCenterImage} // Prioritize loading the main, central image
+                priority={isCenterImage}
+              />
+              {/* Glow effect on hover */}
+              <motion.div
+                className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                style={{
+                  boxShadow: `0 0 30px ${vision.glowColor}`,
+                }}
               />
             </motion.div>
           </motion.div>

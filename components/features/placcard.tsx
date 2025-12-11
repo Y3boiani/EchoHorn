@@ -1,4 +1,7 @@
-import React from 'react'; // Import React for React.memo
+'use client';
+
+import React from 'react';
+import { motion } from 'framer-motion';
 
 // --- Data for Feature Hotspots ---
 // This data is constant and defined outside the component to prevent re-creation on every render.
@@ -26,7 +29,6 @@ const featureHotspots = [
 ];
 
 // --- Type Definition for Placard Props ---
-// Using a specific interface instead of `any` improves type safety and code clarity.
 interface PlacardProps {
   className?: string;
   title: string;
@@ -75,39 +77,73 @@ Placard.displayName = 'Placard';
 const FeaturePlacards = React.memo(() => {
   return (
     <div className="flex flex-col items-center">
-      <h1 className="text-5xl font-bold mb-10 text-white">
+      <motion.h1
+        initial={{ opacity: 0, y: -30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="text-5xl font-bold mb-10 text-white"
+        data-testid="features-title"
+      >
         Features
-      </h1>
+      </motion.h1>
       
       {/* The layout is intentionally asymmetric, so manual placement is preserved. */}
       <div className="flex flex-col gap-6" style={{ width: '950px' }}>
         
         {/* Top Row */}
         <div className="flex gap-6">
-          <Placard
-            className="w-1/2 h-72"
-            title={featureHotspots[0].title}
-            description={featureHotspots[0].description}
-          />
-          <Placard
-            className="w-1/2 h-72"
-            title={featureHotspots[1].title}
-            description={featureHotspots[1].description}
-          />
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="w-1/2"
+          >
+            <Placard
+              className="h-72"
+              title={featureHotspots[0].title}
+              description={featureHotspots[0].description}
+            />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="w-1/2"
+          >
+            <Placard
+              className="h-72"
+              title={featureHotspots[1].title}
+              description={featureHotspots[1].description}
+            />
+          </motion.div>
         </div>
 
         {/* Bottom Row */}
         <div className="flex gap-6">
-          <Placard
-            className="w-1/3 h-52"
-            title={featureHotspots[2].title}
-            description={featureHotspots[2].description}
-          />
-          <Placard
-            className="w-2/3 h-52"
-            title={featureHotspots[3].title}
-            description={featureHotspots[3].description}
-          />
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.6 }}
+            className="w-1/3"
+          >
+            <Placard
+              className="h-52"
+              title={featureHotspots[2].title}
+              description={featureHotspots[2].description}
+            />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.6 }}
+            className="w-2/3"
+          >
+            <Placard
+              className="h-52"
+              title={featureHotspots[3].title}
+              description={featureHotspots[3].description}
+            />
+          </motion.div>
         </div>
       </div>
     </div>
