@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { motion, useMotionValue, useTransform, useMotionTemplate, AnimatePresence } from 'framer-motion';
 import { Orbitron } from 'next/font/google';
+import { api } from '@/lib/api';
 
 const orbitron = Orbitron({
   subsets: ['latin'],
@@ -136,28 +137,41 @@ export default function ReservationForm() {
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-    setShowConfetti(true);
-
-    // Hide confetti after animation
-    setTimeout(() => setShowConfetti(false), 3000);
-
-    // Reset form after 5 seconds
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        company: '',
-        fleetSize: '',
-        message: '',
+    try {
+      // Call real API
+      await api.createReservation({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        company: formData.company,
+        fleetSize: formData.fleetSize || undefined,
+        message: formData.message || undefined,
       });
-    }, 5000);
+
+      setIsSubmitting(false);
+      setIsSubmitted(true);
+      setShowConfetti(true);
+
+      // Hide confetti after animation
+      setTimeout(() => setShowConfetti(false), 3000);
+
+      // Reset form after 5 seconds
+      setTimeout(() => {
+        setIsSubmitted(false);
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          company: '',
+          fleetSize: '',
+          message: '',
+        });
+      }, 5000);
+    } catch (error: any) {
+      setIsSubmitting(false);
+      alert(error.message || 'Failed to submit reservation. Please try again.');
+      console.error('Reservation error:', error);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
