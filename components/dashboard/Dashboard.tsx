@@ -8,7 +8,7 @@ import { useSearchParams } from 'next/navigation';
 import { 
   FaUser, FaTruck, FaMoneyBillWave, FaLocationDot, FaCalendarDays, 
   FaClock, FaSuitcase, FaPhone, FaEnvelope, FaIdCard, FaStar,
-  FaMapLocationDot, FaRoute, FaCheckCircle, FaHourglassHalf,
+  FaMapLocationDot, FaRoute, FaCircleCheck, FaHourglassHalf,
   FaCreditCard, FaReceipt, FaArrowRight
 } from 'react-icons/fa6';
 
