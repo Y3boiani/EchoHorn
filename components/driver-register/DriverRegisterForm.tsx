@@ -184,7 +184,7 @@ export default function DriverRegisterForm() {
               step === 'driver' ? 'border-yellow-400 bg-yellow-400 text-black' : 
               step === 'truck' || step === 'success' ? 'border-green-400 bg-green-400 text-black' : 'border-gray-500'
             }`}>
-              {step === 'truck' || step === 'success' ? <FaCheckCircle /> : '1'}
+              {step === 'truck' || step === 'success' ? <FaCircleCheck /> : '1'}
             </div>
             <span className="hidden md:inline">Driver Details</span>
           </div>
