@@ -137,8 +137,8 @@ export default function Home() {
         <SwiperEffect />
       </motion.div>
 
-      {/* Scroll indicator */}
-      <motion.div
+      {/* Scroll indicator - removed as there's no content below on homepage */}
+      {/* <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5, duration: 1 }}
@@ -153,7 +153,7 @@ export default function Home() {
           <span className="text-sm mb-2 font-medium">Scroll Down</span>
           <FaChevronDown className="w-6 h-6" />
         </motion.div>
-      </motion.div>
+      </motion.div> */}
 
       {/* Keyframes */}
       <style>{`
