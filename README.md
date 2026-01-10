@@ -1,36 +1,196 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Echohorn - Fleet Management Platform
 
-## Getting Started
+AI-powered platform bridging light commercial vehicle drivers and fleet owners.
 
-First, run the development server:
+## 🚀 Quick Start
+
+### Prerequisites
+
+- **Node.js** >= 18.x
+- **Python** >= 3.9
+- **MongoDB** (local or cloud instance)
+- **Yarn** (package manager)
+
+### Installation
+
+#### 1. Clone and Install Frontend Dependencies
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd /app
+yarn install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+#### 2. Install Backend Dependencies
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cd /app/backend
+pip install -r requirements.txt
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+#### 3. Environment Setup
 
-## Learn More
+**Frontend** (`/app/.env`):
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8001
+```
 
-To learn more about Next.js, take a look at the following resources:
+**Backend** (`/app/backend/.env`):
+```env
+MONGO_URL=mongodb://localhost:27017
+JWT_SECRET=your-secret-key-change-in-production
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Running the Application
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+#### Start Backend (FastAPI)
+```bash
+cd /app/backend
+uvicorn server:app --host 0.0.0.0 --port 8001 --reload
+```
 
-## Deploy on Vercel
+#### Start Frontend (Next.js)
+```bash
+cd /app
+yarn dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Or for production:
+```bash
+yarn build
+yarn start
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Access the Application
+
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8001
+- **API Docs**: http://localhost:8001/docs
+
+---
+
+## 📁 Project Structure
+
+```
+/app
+├── app/                    # Next.js App Router pages
+│   ├── page.tsx           # Home page
+│   ├── book-trip/         # Trip booking page
+│   ├── dashboard/         # Legacy dashboard (use portal instead)
+│   ├── portal/
+│   │   ├── customer/      # Customer portal with auth
+│   │   └── driver/        # Driver portal with auth
+│   ├── driver-register/   # Driver/fleet registration
+│   ├── about/             # About page
+│   ├── product/           # Product page
+│   ├── vision/            # Vision page
+│   ├── features/          # Features page
+│   └── reservation/       # Fleet trial booking
+├── components/            # React components
+│   ├── header/           # Navigation header with Services dropdown
+│   ├── Home/             # Homepage hero
+│   ├── book-trip/        # Trip booking form
+│   ├── dashboard/        # Dashboard component
+│   ├── portal/           # Customer & Driver portals
+│   └── driver-register/  # Driver registration form
+├── contexts/             # React contexts
+│   └── AuthContext.tsx   # Authentication context
+├── lib/                  # Utilities
+│   └── api.ts            # API service layer
+├── backend/              # FastAPI backend
+│   ├── server.py         # Main API server
+│   └── requirements.txt  # Python dependencies
+└── public/               # Static assets
+```
+
+---
+
+## 🔐 Authentication
+
+### User Types
+- **Customer**: Can book trips, view dashboard, track vehicles
+- **Driver**: Can view assigned trips, manage vehicles, track earnings
+
+### Test Accounts
+```
+Customer: customer@test.com / password123
+Driver: driver@test.com / password123
+```
+
+### API Endpoints
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/auth/register` | POST | Register new user |
+| `/api/auth/login` | POST | Login and get JWT token |
+| `/api/auth/me` | GET | Get current user info |
+| `/api/auth/verify` | GET | Verify token validity |
+
+---
+
+## 🚗 Core Features
+
+### For Customers
+- **Book a Trip**: Select pickup/drop cities, date, time, vehicle type
+- **Customer Dashboard**: Track trips, view truck details, manage billing
+- **Live Tracking**: See real-time vehicle location during trips
+
+### For Drivers
+- **Driver Portal**: View assigned trips, manage vehicles
+- **Earnings Dashboard**: Track completed trips and earnings
+- **Vehicle Management**: Register and manage fleet vehicles
+
+### Vehicle Types
+| Vehicle | Capacity | Luggage | Price/km |
+|---------|----------|---------|----------|
+| Sedan (4+1) | 4+1 | 30 Kgs | ₹14.00 |
+| MUV-Innova (7+1) | 7+1 | 60 Kgs | ₹19.00 |
+| MUV-Xylo (7+1) | 7+1 | 70 Kgs | ₹18.00 |
+| Tempo Traveller (12+1) | 12+1 | 40 Kgs | ₹30.00 |
+
+---
+
+## 🛠 API Reference
+
+### Trip Endpoints
+- `GET /api/trips` - List all trips
+- `POST /api/trips` - Create new trip
+- `GET /api/trips/{id}` - Get trip details
+- `PUT /api/trips/{id}` - Update trip
+
+### Vehicle Endpoints
+- `GET /api/vehicles` - List vehicle types
+- `GET /api/cities` - List available cities
+
+### Driver/Truck Endpoints
+- `POST /api/drivers` - Register driver
+- `GET /api/drivers` - List drivers
+- `POST /api/trucks` - Register truck
+- `GET /api/trucks` - List trucks
+- `PUT /api/trucks/{id}/location` - Update truck location
+
+### Billing Endpoints
+- `GET /api/billing/{trip_id}` - Get trip billing
+- `PUT /api/billing/{id}/pay` - Mark as paid
+
+---
+
+## 🎨 Tech Stack
+
+### Frontend
+- **Next.js 16** - React framework with App Router
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Styling
+- **Framer Motion** - Animations
+- **React Icons** - Icon library
+
+### Backend
+- **FastAPI** - Python web framework
+- **MongoDB** - Database
+- **Motor** - Async MongoDB driver
+- **PyJWT** - JWT authentication
+- **Pydantic** - Data validation
+
+---
+
+## 📝 License
+
+MIT License - Echohorn © 2024
