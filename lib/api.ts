@@ -2,6 +2,35 @@
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
+// ==================== AUTH TYPES ====================
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  user_type: 'customer' | 'driver';
+  created_at: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: User;
+}
+
+export interface RegisterData {
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+  user_type: 'customer' | 'driver';
+}
+
+export interface LoginData {
+  email: string;
+  password: string;
+}
+
 // ==================== TYPES ====================
 
 export interface Reservation {
