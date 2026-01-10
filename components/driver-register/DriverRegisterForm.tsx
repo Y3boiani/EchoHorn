@@ -203,7 +203,7 @@ export default function DriverRegisterForm() {
             <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
               step === 'success' ? 'border-green-400 bg-green-400 text-black' : 'border-gray-500'
             }`}>
-              {step === 'success' ? <FaCheckCircle /> : '3'}
+              {step === 'success' ? <FaCircleCheck /> : '3'}
             </div>
             <span className="hidden md:inline">Complete</span>
           </div>
