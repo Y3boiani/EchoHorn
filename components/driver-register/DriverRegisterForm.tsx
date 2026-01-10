@@ -7,7 +7,7 @@ import { api, DriverCreate, TruckCreate, Vehicle } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { 
   FaUser, FaTruck, FaIdCard, FaPhone, FaEnvelope, FaLocationDot,
-  FaCalendarDays, FaCheckCircle, FaArrowRight, FaArrowLeft
+  FaCalendarDays, FaCircleCheck, FaArrowRight, FaArrowLeft
 } from 'react-icons/fa6';
 
 const orbitron = Orbitron({
