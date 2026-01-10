@@ -417,6 +417,118 @@ async def health_check():
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Service unhealthy: {str(e)}")
 
+# ==================== AUTH ENDPOINTS ====================
+
+@app.post("/api/auth/register", response_model=AuthResponse, status_code=201)
+async def register_user(user: UserRegister):
+    """Register a new user (customer or driver)"""
+    try:
+        # Check if user already exists
+        existing = await db.users.find_one({"email": user.email})
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        
+        # Validate user type
+        if user.user_type not in ["customer", "driver"]:
+            raise HTTPException(status_code=400, detail="Invalid user type. Must be 'customer' or 'driver'")
+        
+        user_id = str(uuid.uuid4())
+        now = datetime.utcnow()
+        
+        user_doc = {
+            "id": user_id,
+            "name": user.name,
+            "email": user.email,
+            "phone": user.phone,
+            "password_hash": hash_password(user.password),
+            "user_type": user.user_type,
+            "created_at": now,
+            "updated_at": now,
+        }
+        
+        await db.users.insert_one(user_doc)
+        
+        token = create_token(user_id, user.user_type, user.email)
+        
+        return AuthResponse(
+            token=token,
+            user=UserResponse(
+                id=user_id,
+                name=user.name,
+                email=user.email,
+                phone=user.phone,
+                user_type=user.user_type,
+                created_at=now
+            )
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error registering user: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/auth/login", response_model=AuthResponse)
+async def login_user(credentials: UserLogin):
+    """Login user and return token"""
+    try:
+        user = await db.users.find_one({"email": credentials.email})
+        
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        if not verify_password(credentials.password, user["password_hash"]):
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        token = create_token(user["id"], user["user_type"], user["email"])
+        
+        return AuthResponse(
+            token=token,
+            user=UserResponse(
+                id=user["id"],
+                name=user["name"],
+                email=user["email"],
+                phone=user["phone"],
+                user_type=user["user_type"],
+                created_at=user["created_at"]
+            )
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error logging in: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/auth/me", response_model=UserResponse)
+async def get_current_user_info(current_user: dict = Depends(get_current_user)):
+    """Get current logged in user info"""
+    try:
+        user = await db.users.find_one({"id": current_user["user_id"]})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        return UserResponse(
+            id=user["id"],
+            name=user["name"],
+            email=user["email"],
+            phone=user["phone"],
+            user_type=user["user_type"],
+            created_at=user["created_at"]
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/auth/verify")
+async def verify_token(current_user: dict = Depends(get_current_user)):
+    """Verify if token is valid and return user type"""
+    return {
+        "valid": True,
+        "user_id": current_user["user_id"],
+        "user_type": current_user["user_type"],
+        "email": current_user["email"]
+    }
+
 # ==================== VEHICLE ENDPOINTS ====================
 
 @app.get("/api/vehicles")
