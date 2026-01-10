@@ -529,7 +529,7 @@ export default function DriverRegisterForm() {
                   transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
                   className="w-24 h-24 mx-auto bg-green-500/20 rounded-full flex items-center justify-center mb-6"
                 >
-                  <FaCheckCircle className="text-5xl text-green-400" />
+                  <FaCircleCheck className="text-5xl text-green-400" />
                 </motion.div>
                 <h2 className={`${orbitron.className} text-3xl font-bold text-white mb-4`}>
                   Registration Complete!
