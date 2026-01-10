@@ -96,7 +96,7 @@ const Header = () => {
           >
             <span className="absolute inset-0 w-full h-full bg-[#FF6347] rounded-full scale-0 group-hover:scale-150 transition-transform duration-300 ease-in-out" />
             <span className="relative z-10 flex items-center gap-2">
-              Book A Trial
+              Book A Trip
               <motion.div
                 animate={{ x: [0, 5, 0] }}
                 transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
