@@ -58,6 +58,9 @@ const serviceCategories: ServiceCategory[] = [
 const navLinks = [
   { name: "Home", href: "/" },
   { name: "Services", href: "#", hasDropdown: true },
+  { name: "Product", href: "/product" },
+  { name: "Vision", href: "/vision" },
+  { name: "Features", href: "/features" },
   { name: "About", href: "/about" },
 ];
 
