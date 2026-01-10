@@ -221,12 +221,51 @@ class ApiService {
     this.baseUrl = API_URL;
   }
 
+  private getAuthHeaders(): Record<string, string> {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('echohorn_token') : null;
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+  }
+
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
       const error = await response.json().catch(() => ({ detail: 'An error occurred' }));
       throw new Error(error.detail || `HTTP error! status: ${response.status}`);
     }
     return response.json();
+  }
+
+  // ==================== AUTH ====================
+
+  async register(data: RegisterData): Promise<AuthResponse> {
+    const response = await fetch(`${this.baseUrl}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return this.handleResponse(response);
+  }
+
+  async login(data: LoginData): Promise<AuthResponse> {
+    const response = await fetch(`${this.baseUrl}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return this.handleResponse(response);
+  }
+
+  async getCurrentUser(): Promise<User> {
+    const response = await fetch(`${this.baseUrl}/api/auth/me`, {
+      headers: { ...this.getAuthHeaders() },
+    });
+    return this.handleResponse(response);
+  }
+
+  async verifyToken(): Promise<{ valid: boolean; user_id: string; user_type: string; email: string }> {
+    const response = await fetch(`${this.baseUrl}/api/auth/verify`, {
+      headers: { ...this.getAuthHeaders() },
+    });
+    return this.handleResponse(response);
   }
 
   // ==================== RESERVATIONS ====================
