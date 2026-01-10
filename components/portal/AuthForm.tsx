@@ -44,10 +44,10 @@ export default function AuthForm({ userType, title, subtitle }: AuthFormProps) {
           password: formData.password,
         });
         
-        // Redirect based on user type
+        // Redirect based on actual user type (not the portal they're on)
         if (response.user.user_type === 'customer') {
           router.push('/portal/customer');
-        } else {
+        } else if (response.user.user_type === 'driver') {
           router.push('/portal/driver');
         }
       } else {
@@ -59,10 +59,10 @@ export default function AuthForm({ userType, title, subtitle }: AuthFormProps) {
           user_type: userType,
         });
         
-        // Redirect based on user type
+        // Redirect based on the type they registered as
         if (response.user.user_type === 'customer') {
           router.push('/portal/customer');
-        } else {
+        } else if (response.user.user_type === 'driver') {
           router.push('/portal/driver');
         }
       }
