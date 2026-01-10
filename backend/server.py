@@ -87,6 +87,74 @@ VEHICLE_TYPES = {
     }
 }
 
+# ==================== AUTH HELPERS ====================
+
+def hash_password(password: str) -> str:
+    """Hash password with salt"""
+    salt = secrets.token_hex(16)
+    hashed = hashlib.pbkdf2_hmac('sha256', password.encode(), salt.encode(), 100000)
+    return f"{salt}:{hashed.hex()}"
+
+def verify_password(password: str, stored_hash: str) -> bool:
+    """Verify password against stored hash"""
+    try:
+        salt, hashed = stored_hash.split(':')
+        new_hash = hashlib.pbkdf2_hmac('sha256', password.encode(), salt.encode(), 100000)
+        return new_hash.hex() == hashed
+    except:
+        return False
+
+def create_token(user_id: str, user_type: str, email: str) -> str:
+    """Create JWT token"""
+    payload = {
+        "user_id": user_id,
+        "user_type": user_type,
+        "email": email,
+        "exp": datetime.utcnow() + timedelta(days=7)
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+def decode_token(token: str) -> dict:
+    """Decode and verify JWT token"""
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Get current user from token"""
+    if not credentials:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return decode_token(credentials.credentials)
+
+# ==================== AUTH MODELS ====================
+
+class UserRegister(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100)
+    email: EmailStr
+    phone: str = Field(..., min_length=10, max_length=20)
+    password: str = Field(..., min_length=6, max_length=100)
+    user_type: str = Field(..., description="customer or driver")
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class UserResponse(BaseModel):
+    id: str
+    name: str
+    email: str
+    phone: str
+    user_type: str
+    created_at: datetime
+
+class AuthResponse(BaseModel):
+    token: str
+    user: UserResponse
+
 class ReservationCreate(BaseModel):
     name: str = Field(..., min_length=2, max_length=100)
     email: EmailStr
