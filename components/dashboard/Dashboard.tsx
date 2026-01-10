@@ -532,7 +532,7 @@ export default function Dashboard() {
                       ) : (
                         <div className="bg-green-500/10 rounded-xl p-6 border border-green-500/30">
                           <div className="flex items-center gap-3">
-                            <FaCheckCircle className="text-3xl text-green-400" />
+                            <FaCircleCheck className="text-3xl text-green-400" />
                             <div>
                               <p className="text-white font-semibold">Payment Successful</p>
                               <p className="text-gray-400 text-sm">Paid via {billing.paymentMethod}</p>
