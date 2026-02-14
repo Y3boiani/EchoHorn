@@ -88,7 +88,7 @@ const Header = () => {
         </div>
 
         {/* Right side: Book a Trial Button */}
-        <Link href="/reservation" data-testid="book-trial-button">
+        <Link href="/get-started" data-testid="book-trial-button">
           <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
