@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
-from .models import User, ConsumerProfile, ContractorProfile
+from .models import User, CustomerProfile, DriverProfile, ContractorProfile
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -20,7 +20,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError({"password": "Password fields didn't match."})
         
-        if attrs['user_type'] not in ['consumer', 'contractor']:
+        if attrs['user_type'] not in ['customer', 'driver', 'contractor']:
             raise serializers.ValidationError({"user_type": "Invalid user type."})
         
         return attrs
@@ -30,18 +30,23 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         
         # Create profile based on user type
-        if user.user_type == 'consumer':
-            ConsumerProfile.objects.create(user=user)
-        elif user.user_type == 'contractor':
-            # Contractor profile will be completed later
-            pass
+        if user.user_type == 'customer':
+            CustomerProfile.objects.create(user=user)
+        # Driver and Contractor profiles need to be completed separately
         
         return user
 
 
-class ConsumerProfileSerializer(serializers.ModelSerializer):
+class CustomerProfileSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ConsumerProfile
+        model = CustomerProfile
+        fields = '__all__'
+        read_only_fields = ('user',)
+
+
+class DriverProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DriverProfile
         fields = '__all__'
         read_only_fields = ('user',)
 
@@ -55,12 +60,13 @@ class ContractorProfileSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    consumer_profile = ConsumerProfileSerializer(read_only=True)
+    customer_profile = CustomerProfileSerializer(read_only=True)
+    driver_profile = DriverProfileSerializer(read_only=True)
     contractor_profile = ContractorProfileSerializer(read_only=True)
     
     class Meta:
         model = User
         fields = ('id', 'email', 'first_name', 'last_name', 'phone_number', 
                   'user_type', 'is_email_verified', 'is_phone_verified', 
-                  'consumer_profile', 'contractor_profile', 'created_at')
+                  'customer_profile', 'driver_profile', 'contractor_profile', 'created_at')
         read_only_fields = ('id', 'is_email_verified', 'is_phone_verified', 'created_at')

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, ConsumerProfile, ContractorProfile
+from .models import User, CustomerProfile, DriverProfile, ContractorProfile
 
 
 @admin.register(User)
@@ -29,11 +29,19 @@ class UserAdmin(BaseUserAdmin):
     readonly_fields = ('created_at', 'updated_at', 'last_login')
 
 
-@admin.register(ConsumerProfile)
-class ConsumerProfileAdmin(admin.ModelAdmin):
+@admin.register(CustomerProfile)
+class CustomerProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'company_name', 'is_business', 'created_at')
     search_fields = ('user__email', 'company_name')
     list_filter = ('is_business',)
+
+
+@admin.register(DriverProfile)
+class DriverProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'license_number', 'home_region', 'currently_available', 'years_of_experience', 'created_at')
+    search_fields = ('user__email', 'license_number', 'aadhaar_number')
+    list_filter = ('currently_available', 'preferred_route_types', 'home_region')
+    readonly_fields = ('created_at', 'updated_at')
 
 
 @admin.register(ContractorProfile)

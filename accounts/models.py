@@ -29,7 +29,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     """Custom User model with email as username"""
     
     USER_TYPE_CHOICES = (
-        ('consumer', 'Consumer'),
+        ('customer', 'Customer'),
+        ('driver', 'Driver'),
         ('contractor', 'Contractor'),
     )
     
@@ -70,13 +71,20 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f"{self.first_name} {self.last_name}"
 
 
-class ConsumerProfile(models.Model):
-    """Profile for consumers who need logistics services"""
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='consumer_profile')
+class CustomerProfile(models.Model):
+    """Profile for customers who need logistics services"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='customer_profile')
+    
+    # Saved addresses (JSON field for flexibility)
+    saved_addresses = models.JSONField(
+        default=list, 
+        blank=True, 
+        help_text="List of saved addresses with labels"
+    )
+    
+    # Business customer details (optional)
     company_name = models.CharField(max_length=255, blank=True)
     is_business = models.BooleanField(default=False)
-    
-    # Business details (optional)
     gst_number = models.CharField(max_length=15, blank=True)
     business_address = models.TextField(blank=True)
     
@@ -84,7 +92,49 @@ class ConsumerProfile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
-        return f"Consumer: {self.user.get_full_name()}"
+        return f"Customer: {self.user.get_full_name()}"
+
+
+class DriverProfile(models.Model):
+    """Profile for drivers - contains driver-specific data"""
+    
+    ROUTE_TYPE_CHOICES = [
+        ('local', 'Local'),
+        ('intercity', 'Intercity'),
+        ('both', 'Both'),
+    ]
+    
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='driver_profile')
+    
+    # Personal Info
+    aadhaar_number = models.CharField(max_length=12, unique=True)
+    date_of_birth = models.DateField()
+    
+    # Professional Info
+    license_number = models.CharField(max_length=50, unique=True)
+    license_expiry_date = models.DateField()
+    years_of_experience = models.IntegerField(default=0)
+    
+    # Availability
+    home_region = models.CharField(max_length=100, help_text="Primary operating region/city")
+    currently_available = models.BooleanField(default=True)
+    preferred_route_types = models.CharField(
+        max_length=20,
+        choices=ROUTE_TYPE_CHOICES,
+        default='both'
+    )
+    
+    # Documents
+    driving_license = models.ImageField(upload_to='driver_docs/license/', blank=True)
+    truck_rc_book = models.ImageField(upload_to='driver_docs/rc/', blank=True)
+    insurance_certificate = models.ImageField(upload_to='driver_docs/insurance/', blank=True)
+    pollution_certificate = models.ImageField(upload_to='driver_docs/pollution/', blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Driver Profile: {self.user.get_full_name()}"
 
 
 class ContractorProfile(models.Model):
@@ -102,6 +152,7 @@ class ContractorProfile(models.Model):
     company_name = models.CharField(max_length=255, blank=True)
     company_registration_number = models.CharField(max_length=100, blank=True)
     gst_number = models.CharField(max_length=15, blank=True)
+    years_in_business = models.IntegerField(default=0)
     
     # Address
     business_address = models.TextField()
@@ -109,9 +160,20 @@ class ContractorProfile(models.Model):
     state = models.CharField(max_length=100)
     pincode = models.CharField(max_length=10)
     
+    # Primary operating regions
+    primary_operating_regions = models.TextField(
+        blank=True,
+        help_text="Comma-separated list of primary operating cities/regions"
+    )
+    
     # Documents
     pan_card = models.ImageField(upload_to='contractor_docs/pan/', blank=True)
     registration_certificate = models.ImageField(upload_to='contractor_docs/registration/', blank=True)
+    gst_certificate = models.ImageField(upload_to='contractor_docs/gst/', blank=True)
+    trade_license = models.ImageField(upload_to='contractor_docs/trade_license/', blank=True)
+    
+    # Fleet info
+    total_trucks_owned = models.IntegerField(default=0, help_text="Total trucks in fleet")
     
     # Verification
     is_verified = models.BooleanField(default=False)
@@ -121,7 +183,6 @@ class ContractorProfile(models.Model):
     total_vehicles = models.IntegerField(default=0)
     total_drivers = models.IntegerField(default=0)
     average_rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
-    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
