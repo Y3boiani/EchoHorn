@@ -1,0 +1,737 @@
+{
+  "info": {
+    "name": "EchoHorn API",
+    "description": "Complete API collection for EchoHorn logistics platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "customer_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "driver_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "contractor_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@test.com\",\n  \"password\": \"TestPass123!\",\n  \"password2\": \"TestPass123!\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"phone_number\": \"+919876543210\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register/customer/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register", "customer", ""]
+            }
+          }
+        },
+        {
+          "name": "Register Driver",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"driver@test.com\",\n  \"password\": \"TestPass123!\",\n  \"password2\": \"TestPass123!\",\n  \"first_name\": \"Rajesh\",\n  \"last_name\": \"Kumar\",\n  \"phone_number\": \"+919876543211\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register/driver/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register", "driver", ""]
+            }
+          }
+        },
+        {
+          "name": "Register Contractor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"contractor@test.com\",\n  \"password\": \"TestPass123!\",\n  \"password2\": \"TestPass123!\",\n  \"first_name\": \"Ramesh\",\n  \"last_name\": \"Sharma\",\n  \"phone_number\": \"+919876543212\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register/contractor/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register", "contractor", ""]
+            }
+          }
+        },
+        {
+          "name": "Login Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"customer_token\", jsonData.access);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@test.com\",\n  \"password\": \"TestPass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login", ""]
+            }
+          }
+        },
+        {
+          "name": "Login Driver",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"driver_token\", jsonData.access);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"driver@test.com\",\n  \"password\": \"TestPass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login", ""]
+            }
+          }
+        },
+        {
+          "name": "Login Contractor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"contractor_token\", jsonData.access);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"contractor@test.com\",\n  \"password\": \"TestPass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Current User (Customer)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/me/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me", ""]
+            }
+          }
+        },
+        {
+          "name": "Complete Driver Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{driver_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aadhaar_number\": \"123456789012\",\n  \"date_of_birth\": \"1990-01-01\",\n  \"license_number\": \"DL1234567890\",\n  \"license_expiry_date\": \"2030-12-31\",\n  \"years_of_experience\": 5,\n  \"home_region\": \"Mumbai\",\n  \"currently_available\": true,\n  \"preferred_route_types\": \"both\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/driver/complete-profile/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "driver", "complete-profile", ""]
+            }
+          }
+        },
+        {
+          "name": "Complete Contractor Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{contractor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contractor_type\": \"company\",\n  \"company_name\": \"ABC Logistics\",\n  \"gst_number\": \"27AABCU9603R1ZM\",\n  \"years_in_business\": 10,\n  \"business_address\": \"123 Main St, Mumbai\",\n  \"city\": \"Mumbai\",\n  \"state\": \"Maharashtra\",\n  \"pincode\": \"400001\",\n  \"total_trucks_owned\": 50\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/contractor/complete-profile/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "contractor", "complete-profile", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customer - Service Requests",
+      "item": [
+        {
+          "name": "Create Service Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"service_type\": \"intercity\",\n  \"pickup_address\": \"123 Pickup St, Mumbai, 400001\",\n  \"pickup_floor_number\": 3,\n  \"pickup_lift_available\": true,\n  \"pickup_parking_available\": false,\n  \"drop_address\": \"456 Drop St, Pune, 411001\",\n  \"drop_floor_number\": 2,\n  \"drop_lift_available\": false,\n  \"drop_parking_available\": true,\n  \"cargo_type\": \"furniture\",\n  \"cargo_weight\": 500.00,\n  \"room_count\": 2,\n  \"packing_needed\": true,\n  \"vehicle_type_preference\": \"medium_truck\",\n  \"pickup_datetime\": \"2025-03-15T09:00:00Z\",\n  \"special_notes\": \"Handle with care\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/consumer/requests/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "consumer", "requests", ""]
+            }
+          }
+        },
+        {
+          "name": "List My Service Requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/consumer/requests/list/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "consumer", "requests", "list", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Service Request Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/consumer/requests/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "consumer", "requests", "1", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Available Drivers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/consumer/requests/1/drivers/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "consumer", "requests", "1", "drivers", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customer - Bookings",
+      "item": [
+        {
+          "name": "Create Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"service_request\": 1,\n  \"driver\": 1,\n  \"contractor\": 2,\n  \"vehicle\": 1,\n  \"final_price\": 5000.00\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/consumer/bookings/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "consumer", "bookings", ""]
+            }
+          }
+        },
+        {
+          "name": "List My Bookings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/consumer/bookings/list/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "consumer", "bookings", "list", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Booking Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/consumer/bookings/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "consumer", "bookings", "1", ""]
+            }
+          }
+        },
+        {
+          "name": "Pay Advance",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/consumer/bookings/1/pay-advance/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "consumer", "bookings", "1", "pay-advance", ""]
+            }
+          }
+        },
+        {
+          "name": "Pay Full Amount",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/consumer/bookings/1/pay-full/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "consumer", "bookings", "1", "pay-full", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customer - Ratings",
+      "item": [
+        {
+          "name": "Rate Driver",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking\": 1,\n  \"rated_user\": 2,\n  \"rating\": 5,\n  \"review\": \"Excellent service!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/consumer/ratings/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "consumer", "ratings", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contractor - Vehicles",
+      "item": [
+        {
+          "name": "Add Vehicle",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{contractor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"registration_number\": \"MH01AB1234\",\n  \"vehicle_type\": \"medium_truck\",\n  \"capacity_weight\": 5.00,\n  \"model_make\": \"Tata 407\",\n  \"fuel_type\": \"diesel\",\n  \"length_feet\": 12.0,\n  \"width_feet\": 6.0,\n  \"height_feet\": 6.5,\n  \"gps_device_id\": \"GPS123456\",\n  \"current_location\": \"Mumbai\",\n  \"insurance_policy_number\": \"INS987654\",\n  \"insurance_expiry_date\": \"2026-12-31\",\n  \"puc_number\": \"PUC123456\",\n  \"puc_expiry_date\": \"2025-06-30\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/contractor/vehicles/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "contractor", "vehicles", ""]
+            }
+          }
+        },
+        {
+          "name": "List My Vehicles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{contractor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/contractor/vehicles/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "contractor", "vehicles", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Vehicle Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{contractor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/contractor/vehicles/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "contractor", "vehicles", "1", ""]
+            }
+          }
+        },
+        {
+          "name": "Update Vehicle",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{contractor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_location\": \"Pune\",\n  \"status\": \"available\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/contractor/vehicles/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "contractor", "vehicles", "1", ""]
+            }
+          }
+        },
+        {
+          "name": "Delete Vehicle",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{contractor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/contractor/vehicles/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "contractor", "vehicles", "1", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contractor - Drivers",
+      "item": [
+        {
+          "name": "List My Drivers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{contractor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/contractor/drivers/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "contractor", "drivers", ""]
+            }
+          }
+        },
+        {
+          "name": "Add Fleet Driver",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{contractor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"driver_user_id\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/contractor/drivers/add-fleet-driver/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "contractor", "drivers", "add-fleet-driver", ""]
+            }
+          }
+        },
+        {
+          "name": "Assign Driver to Vehicle",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{contractor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"driver\": 1,\n  \"vehicle\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/contractor/assign-driver/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "contractor", "assign-driver", ""]
+            }
+          }
+        },
+        {
+          "name": "List Assignments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{contractor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/contractor/assignments/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "contractor", "assignments", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Driver - Independent",
+      "item": [
+        {
+          "name": "Register as Independent Driver",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{driver_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/contractor/drivers/register-independent/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "contractor", "drivers", "register-independent", ""]
+            }
+          }
+        },
+        {
+          "name": "Add Own Vehicle (as Independent)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{driver_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"registration_number\": \"MH02CD5678\",\n  \"vehicle_type\": \"medium_truck\",\n  \"capacity_weight\": 5.00,\n  \"model_make\": \"Tata 407\",\n  \"fuel_type\": \"diesel\",\n  \"current_location\": \"Mumbai\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/contractor/vehicles/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "contractor", "vehicles", ""]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

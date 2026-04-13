@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EchoHorn API Tester</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3348;
+      --accent: #6c63ff;
+      --accent2: #4ecdc4;
+      --success: #43d08a;
+      --error: #ff5c5c;
+      --warn: #f7c948;
+      --text: #e4e6f1;
+      --muted: #7c809a;
+      --radius: 10px;
+      --font: 'Inter', system-ui, sans-serif;
+    }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header h1 { font-size: 18px; font-weight: 700; color: var(--accent); }
+    header span { font-size: 12px; color: var(--muted); background: var(--surface2); padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border); }
+    #auth-status {
+      margin-left: auto;
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    #auth-status.logged-in { border-color: var(--success); color: var(--success); }
+    .layout { display: flex; flex: 1; height: calc(100vh - 57px); }
+    nav {
+      width: 220px;
+      min-width: 220px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 12px 0;
+    }
+    nav .section-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      padding: 12px 16px 6px;
+    }
+    nav button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 9px 16px;
+      font-size: 13px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: all .15s;
+    }
+    nav button:hover { color: var(--text); background: var(--surface2); }
+    nav button.active { color: var(--accent); border-left-color: var(--accent); background: rgba(108,99,255,.08); }
+    nav .method-badge {
+      font-size: 9px;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 1px 5px;
+      border-radius: 4px;
+      margin-right: 6px;
+      font-weight: 600;
+    }
+    .GET { background: rgba(78,205,196,.15); color: var(--accent2); }
+    .POST { background: rgba(67,208,138,.15); color: var(--success); }
+    .PATCH, .PUT { background: rgba(247,201,72,.15); color: var(--warn); }
+    .DELETE { background: rgba(255,92,92,.15); color: var(--error); }
+
+    main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .pane-top { flex: 1; overflow-y: auto; padding: 20px; }
+    .pane-bottom {
+      min-height: 220px;
+      max-height: 40%;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+    .pane-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      padding: 0 16px;
+    }
+    .pane-tabs button {
+      padding: 10px 16px;
+      font-size: 12px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      cursor: pointer;
+      margin-bottom: -1px;
+    }
+    .pane-tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .response-body {
+      flex: 1;
+      overflow: auto;
+      padding: 12px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .status-bar {
+      padding: 4px 16px;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 16px;
+    }
+    .status-bar .ok { color: var(--success); }
+    .status-bar .err { color: var(--error); }
+
+    /* Form area */
+    .endpoint-header { margin-bottom: 16px; }
+    .endpoint-header h2 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .endpoint-header .url-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px 12px;
+    }
+    .endpoint-header .url-bar .method { font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .endpoint-header .url-bar .path { font-size: 13px; font-family: 'JetBrains Mono', monospace; color: var(--muted); flex: 1; }
+    .endpoint-header p { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+    .field-group { margin-bottom: 14px; }
+    .field-group label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; font-weight: 500; }
+    .field-group input, .field-group select, .field-group textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: var(--font);
+      padding: 8px 10px;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .field-group input:focus, .field-group select:focus, .field-group textarea:focus {
+      border-color: var(--accent);
+    }
+    .field-group textarea { resize: vertical; min-height: 80px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+    .btn {
+      padding: 9px 20px;
+      border-radius: 6px;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #7c74ff; }
+    .btn-primary:active { transform: scale(.97); }
+    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-danger { background: rgba(255,92,92,.15); color: var(--error); border: 1px solid rgba(255,92,92,.3); }
+
+    .token-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      word-break: break-all;
+      margin-bottom: 12px;
+    }
+    .token-box strong { color: var(--accent2); display: block; margin-bottom: 4px; font-family: var(--font); font-size: 11px; }
+    .note { background: rgba(108,99,255,.08); border: 1px solid rgba(108,99,255,.25); border-radius: 6px; padding: 10px 12px; font-size: 12px; color: var(--accent); margin-bottom: 12px; }
+    .note strong { display: block; margin-bottom: 2px; }
+    .divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+    .section-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+
+    .json-key { color: #9d79d6; }
+    .json-str { color: #98c379; }
+    .json-num { color: #d19a66; }
+    .json-bool { color: #56b6c2; }
+    .json-null { color: var(--muted); }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🔊 EchoHorn</h1>
+  <span>API Tester</span>
+  <div id="auth-status">Not logged in</div>
+  <button class="btn btn-danger" id="clear-token-btn" onclick="clearToken()" style="padding:5px 12px; font-size:12px; display:none">Logout</button>
+</header>
+
+<div class="layout">
+  <!-- Sidebar Nav -->
+  <nav id="nav">
+    <div class="section-label">Auth</div>
+    <button onclick="show('register-consumer')" id="nav-register-consumer"><span class="method-badge POST">POST</span>Register Consumer</button>
+    <button onclick="show('register-contractor')" id="nav-register-contractor"><span class="method-badge POST">POST</span>Register Contractor</button>
+    <button onclick="show('login')" id="nav-login"><span class="method-badge POST">POST</span>Login</button>
+    <button onclick="show('token-refresh')" id="nav-token-refresh"><span class="method-badge POST">POST</span>Token Refresh</button>
+    <button onclick="show('me')" id="nav-me"><span class="method-badge GET">GET</span>Me (Profile)</button>
+    <button onclick="show('me-update')" id="nav-me-update"><span class="method-badge PATCH">PATCH</span>Update Profile</button>
+    <button onclick="show('contractor-profile')" id="nav-contractor-profile"><span class="method-badge POST">POST</span>Complete Contractor Profile</button>
+
+    <div class="section-label">Contractor — Vehicles</div>
+    <button onclick="show('vehicle-list')" id="nav-vehicle-list"><span class="method-badge GET">GET</span>List Vehicles</button>
+    <button onclick="show('vehicle-create')" id="nav-vehicle-create"><span class="method-badge POST">POST</span>Create Vehicle</button>
+    <button onclick="show('vehicle-detail')" id="nav-vehicle-detail"><span class="method-badge GET">GET</span>Vehicle Detail</button>
+    <button onclick="show('vehicle-update')" id="nav-vehicle-update"><span class="method-badge PATCH">PATCH</span>Update Vehicle</button>
+    <button onclick="show('vehicle-delete')" id="nav-vehicle-delete"><span class="method-badge DELETE">DELETE</span>Delete Vehicle</button>
+
+    <div class="section-label">Contractor — Drivers</div>
+    <button onclick="show('driver-list')" id="nav-driver-list"><span class="method-badge GET">GET</span>List Drivers</button>
+    <button onclick="show('driver-detail')" id="nav-driver-detail"><span class="method-badge GET">GET</span>Driver Detail</button>
+    <button onclick="show('add-fleet-driver')" id="nav-add-fleet-driver"><span class="method-badge POST">POST</span>Add Fleet Driver</button>
+    <button onclick="show('register-independent')" id="nav-register-independent"><span class="method-badge POST">POST</span>Register Independent</button>
+    <button onclick="show('assign-driver')" id="nav-assign-driver"><span class="method-badge POST">POST</span>Assign Driver→Vehicle</button>
+    <button onclick="show('assignment-list')" id="nav-assignment-list"><span class="method-badge GET">GET</span>List Assignments</button>
+
+    <div class="section-label">Consumer — Requests</div>
+    <button onclick="show('request-create')" id="nav-request-create"><span class="method-badge POST">POST</span>Create Service Request</button>
+    <button onclick="show('request-list')" id="nav-request-list"><span class="method-badge GET">GET</span>List My Requests</button>
+    <button onclick="show('request-detail')" id="nav-request-detail"><span class="method-badge GET">GET</span>Request Detail</button>
+    <button onclick="show('available-drivers')" id="nav-available-drivers"><span class="method-badge GET">GET</span>Available Drivers</button>
+
+    <div class="section-label">Consumer — Bookings</div>
+    <button onclick="show('booking-create')" id="nav-booking-create"><span class="method-badge POST">POST</span>Create Booking</button>
+    <button onclick="show('booking-list')" id="nav-booking-list"><span class="method-badge GET">GET</span>List Bookings</button>
+    <button onclick="show('booking-detail')" id="nav-booking-detail"><span class="method-badge GET">GET</span>Booking Detail</button>
+    <button onclick="show('pay-advance')" id="nav-pay-advance"><span class="method-badge POST">POST</span>Pay Advance</button>
+    <button onclick="show('pay-full')" id="nav-pay-full"><span class="method-badge POST">POST</span>Pay Full</button>
+    <button onclick="show('rating-create')" id="nav-rating-create"><span class="method-badge POST">POST</span>Create Rating</button>
+  </nav>
+
+  <main>
+    <div class="pane-top" id="pane-top">
+      <!-- Content injected by JS -->
+    </div>
+    <div class="pane-bottom">
+      <div class="pane-tabs">
+        <button class="active" onclick="switchTab('response')">Response</button>
+        <button onclick="switchTab('headers')">Headers</button>
+      </div>
+      <div class="response-body" id="response-area">Hit <strong style="color:var(--accent)">Send</strong> to see the response here.</div>
+      <div class="status-bar" id="status-bar">
+        <span id="status-code">—</span>
+        <span id="status-time">—</span>
+        <span id="status-size">—</span>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const BASE = 'http://127.0.0.1:8000/api';
+let token = localStorage.getItem('echoaccess') || '';
+let refreshToken = localStorage.getItem('echorefresh') || '';
+let responseHeaders = {};
+
+function updateAuthStatus() {
+  const el = document.getElementById('auth-status');
+  const btn = document.getElementById('clear-token-btn');
+  if (token) {
+    el.textContent = '🔐 Authenticated';
+    el.className = 'logged-in';
+    btn.style.display = '';
+  } else {
+    el.textContent = 'Not logged in';
+    el.className = '';
+    btn.style.display = 'none';
+  }
+}
+updateAuthStatus();
+
+function clearToken() {
+  token = ''; refreshToken = '';
+  localStorage.removeItem('echoaccess');
+  localStorage.removeItem('echorefresh');
+  updateAuthStatus();
+  setResponse({ detail: 'Logged out — token cleared.' }, 200, 0, '{}');
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.pane-tabs button').forEach((b,i) => b.classList.toggle('active', i === (tab==='response'?0:1)));
+  if (tab === 'response') {
+    document.getElementById('response-area').dataset.mode = 'body';
+  } else {
+    const el = document.getElementById('response-area');
+    el.dataset.mode = 'headers';
+    el.innerHTML = syntaxHighlight(JSON.stringify(responseHeaders, null, 2));
+  }
+}
+
+function show(id) {
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  const navBtn = document.getElementById('nav-' + id);
+  if (navBtn) navBtn.classList.add('active');
+  const pane = document.getElementById('pane-top');
+  pane.innerHTML = pages[id] || '<p style="color:var(--muted);padding:20px">No content.</p>';
+}
+
+async function send(method, path, bodyObj, isFormData) {
+  const url = BASE + path;
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  const opts = { method, headers };
+  if (bodyObj && method !== 'GET') {
+    opts.body = isFormData ? JSON.stringify(bodyObj) : JSON.stringify(bodyObj);
+  }
+  const t0 = performance.now();
+  try {
+    const res = await fetch(url, opts);
+    const elapsed = Math.round(performance.now() - t0);
+    responseHeaders = {};
+    res.headers.forEach((v, k) => responseHeaders[k] = v);
+    let text = await res.text();
+    let parsed;
+    try { parsed = JSON.parse(text); } catch { parsed = text; }
+    setResponse(parsed, res.status, elapsed, text);
+    return parsed;
+  } catch (e) {
+    setResponse({ error: e.message }, 0, 0, '');
+    return null;
+  }
+}
+
+function setResponse(data, status, ms, raw) {
+  const area = document.getElementById('response-area');
+  if (typeof data === 'object') {
+    area.innerHTML = syntaxHighlight(JSON.stringify(data, null, 2));
+  } else {
+    area.textContent = data || raw;
+  }
+  area.dataset.mode = 'body';
+  area.dataset.raw = raw;
+  const sc = document.getElementById('status-code');
+  sc.textContent = status ? `Status: ${status}` : 'Network Error';
+  sc.className = status >= 200 && status < 300 ? 'ok' : 'err';
+  document.getElementById('status-time').textContent = ms ? `${ms}ms` : '';
+  document.getElementById('status-size').textContent = raw ? `${raw.length} bytes` : '';
+  document.querySelectorAll('.pane-tabs button').forEach((b,i) => b.classList.toggle('active', i===0));
+}
+
+function syntaxHighlight(json) {
+  return json
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, match => {
+      let cls = 'json-num';
+      if (/^"/.test(match)) cls = /:$/.test(match) ? 'json-key' : 'json-str';
+      else if (/true|false/.test(match)) cls = 'json-bool';
+      else if (/null/.test(match)) cls = 'json-null';
+      return `<span class="${cls}">${match}</span>`;
+    });
+}
+
+function v(id) { return (document.getElementById(id)||{}).value || ''; }
+
+// ─── PAGE DEFINITIONS ───────────────────────────────────────────────────────
+const pages = {
+
+// ── AUTH ──────────────────────────────────────────────────────────────────
+'register-consumer': `
+<div class="endpoint-header">
+  <h2>Register Consumer</h2>
+  <div class="url-bar"><span class="method-badge POST method">POST</span><span class="path">/auth/register/consumer/</span></div>
+  <p>Creates a consumer account. No auth required.</p>
+</div>
+<div class="field-row">
+  <div class="field-group"><label>First Name</label><input id="rc-first" value="Test"/></div>
+  <div class="field-group"><label>Last Name</label><input id="rc-last" value="Consumer"/></div>
+</div>
+<div class="field-group"><label>Email</label><input id="rc-email" type="email" value="consumer@test.com"/></div>
+<div class="field-group"><label>Phone (optional, e.g. +919999999999)</label><input id="rc-phone" value=""/></div>
+<div class="field-row">
+  <div class="field-group"><label>Password</label><input id="rc-pass" type="password" value="TestPass@123"/></div>
+  <div class="field-group"><label>Confirm Password</label><input id="rc-pass2" type="password" value="TestPass@123"/></div>
+</div>
+<button class="btn btn-primary" onclick="doRegisterConsumer()">Send →</button>`,
+
+'register-contractor': `
+<div class="endpoint-header">
+  <h2>Register Contractor</h2>
+  <div class="url-bar"><span class="method-badge POST method">POST</span><span class="path">/auth/register/contractor/</span></div>
+  <p>Creates a contractor account. No auth required.</p>
+</div>
+<div class="field-row">
+  <div class="field-group"><label>First Name</label><input id="rco-first" value="Test"/></div>
+  <div class="field-group"><label>Last Name</label><input id="rco-last" value="Contractor"/></div>
+</div>
+<div class="field-group"><label>Email</label><input id="rco-email" value="contractor@test.com"/></div>
+<div class="field-group"><label>Phone (optional)</label><input id="rco-phone" value=""/></div>
+<div class="field-row">
+  <div class="field-group"><label>Password</label><input id="rco-pass" type="password" value="TestPass@123"/></div>
+  <div class="field-group"><label>Confirm Password</label><input id="rco-pass2" type="password" value="TestPass@123"/></div>
+</div>
+<button class="btn btn-primary" onclick="doRegisterContractor()">Send →</button>`,
+
+'login': `
+<div class="endpoint-header">
+  <h2>Login</h2>
+  <div class="url-bar"><span class="method-badge POST method">POST</span><span class="path">/auth/login/</span></div>
+  <p>Returns access + refresh JWT. Token is stored automatically for other requests.</p>
+</div>
+<div class="field-group"><label>Email</label><input id="li-email" value="consumer@test.com"/></div>
+<div class="field-group"><label>Password</label><input id="li-pass" type="password" value="TestPass@123"/></div>
+<button class="btn btn-primary" onclick="doLogin()">Send →</button>
+${tokenDisplay()}`,
+
+'token-refresh': `
+<div class="endpoint-header">
+  <h2>Token Refresh</h2>
+  <div class="url-bar"><span class="method-badge POST method">POST</span><span class="path">/auth/token/refresh/</span></div>
+  <p>Gets a new access token using the refresh token.</p>
+</div>
+<div class="field-group"><label>Refresh Token (auto-filled from login)</label><textarea id="tr-refresh">${refreshToken}</textarea></div>
+<button class="btn btn-primary" onclick="doTokenRefresh()">Send →</button>`,
+
+'me': `
+<div class="endpoint-header">
+  <h2>My Profile</h2>
+  <div class="url-bar"><span class="method-badge GET method">GET</span><span class="path">/auth/me/</span></div>
+  <p>Returns the authenticated user's profile. Requires JWT.</p>
+</div>
+${authNote()}
+<button class="btn btn-primary" onclick="doMe()">Send →</button>`,
+
+'me-update': `
+<div class="endpoint-header">
+  <h2>Update Profile</h2>
+  <div class="url-bar"><span class="method-badge PATCH method">PATCH</span><span class="path">/auth/me/</span></div>
+  <p>Update first name, last name, or phone. Requires JWT.</p>
+</div>
+${authNote()}
+<div class="field-row">
+  <div class="field-group"><label>First Name</label><input id="mu-first" value=""/></div>
+  <div class="field-group"><label>Last Name</label><input id="mu-last" value=""/></div>
+</div>
+<div class="field-group"><label>Phone</label><input id="mu-phone" value=""/></div>
+<button class="btn btn-primary" onclick="doMeUpdate()">Send →</button>`,
+
+'contractor-profile': `
+<div class="endpoint-header">
+  <h2>Complete Contractor Profile</h2>
+  <div class="url-bar"><span class="method-badge POST method">POST</span><span class="path">/auth/contractor/complete-profile/</span></div>
+  <p>Fill in contractor business details. Requires JWT (contractor user).</p>
+</div>
+${authNote()}
+<div class="field-row">
+  <div class="field-group"><label>Contractor Type</label>
+    <select id="cp-type"><option value="individual">Individual</option><option value="company">Company</option></select>
+  </div>
+  <div class="field-group"><label>Company Name (if company)</label><input id="cp-company" value=""/></div>
+</div>
+<div class="field-group"><label>Business Address</label><input id="cp-addr" value="123 Main St"/></div>
+<div class="field-row3">
+  <div class="field-group"><label>City</label><input id="cp-city" value="Mumbai"/></div>
+  <div class="field-group"><label>State</label><input id="cp-state" value="Maharashtra"/></div>
+  <div class="field-group"><label>Pincode</label><input id="cp-pin" value="400001"/></div>
+</div>
+<div class="field-row">
+  <div class="field-group"><label>GST Number (optional)</label><input id="cp-gst" value=""/></div>
+  <div class="field-group"><label>Company Reg. No. (optional)</label><input id="cp-reg" value=""/></div>
+</div>
+<button class="btn btn-primary" onclick="doContractorProfile()">Send →</button>`,
+
+// ── VEHICLES ──────────────────────────────────────────────────────────────
+'vehicle-list': `
+<div class="endpoint-header">
+  <h2>List Vehicles</h2>
+  <div class="url-bar"><span class="method-badge GET method">GET</span><span class="path">/contractor/vehicles/</span></div>
+  <p>Lists all vehicles owned by the authenticated contractor.</p>
+</div>
+${authNote()}
+<button class="btn btn-primary" onclick="send('GET','/contractor/vehicles/')">Send →</button>`,
+
+'vehicle-create': `
+<div class="endpoint-header">
+  <h2>Create Vehicle</h2>
+  <div class="url-bar"><span class="method-badge POST method">POST</span><span class="path">/contractor/vehicles/</span></div>
+  <p>Register a new vehicle for your fleet.</p>
+</div>
+${authNote()}
+<div class="field-row">
+  <div class="field-group"><label>Registration Number</label><input id="vc-reg" value="MH12AB1234"/></div>
+  <div class="field-group"><label>Vehicle Type</label>
+    <select id="vc-type">
+      <option value="mini_truck">Mini Truck</option><option value="medium_truck">Medium Truck</option>
+      <option value="full_truck">Full Truck</option><option value="trailer">Trailer</option><option value="tempo">Tempo</option>
+    </select>
+  </div>
+</div>
+<div class="field-row">
+  <div class="field-group"><label>Model / Make</label><input id="vc-model" value="Tata Ace"/></div>
+  <div class="field-group"><label>Fuel Type</label>
+    <select id="vc-fuel"><option value="diesel">Diesel</option><option value="cng">CNG</option><option value="electric">Electric</option></select>
+  </div>
+</div>
+<div class="field-row">
+  <div class="field-group"><label>Capacity Weight (tons)</label><input id="vc-cap" value="1.5"/></div>
+  <div class="field-group"><label>GPS Device ID (optional)</label><input id="vc-gps" value=""/></div>
+</div>
+<div class="field-row3">
+  <div class="field-group"><label>Length (ft)</label><input id="vc-len" value=""/></div>
+  <div class="field-group"><label>Width (ft)</label><input id="vc-wid" value=""/></div>
+  <div class="field-group"><label>Height (ft)</label><input id="vc-hei" value=""/></div>
+</div>
+<button class="btn btn-primary" onclick="doVehicleCreate()">Send →</button>`,
+
+'vehicle-detail': `
+<div class="endpoint-header">
+  <h2>Vehicle Detail</h2>
+  <div class="url-bar"><span class="method-badge GET method">GET</span><span class="path">/contractor/vehicles/{id}/</span></div>
+</div>
+${authNote()}
+<div class="field-group"><label>Vehicle ID</label><input id="vd-id" value="1"/></div>
+<button class="btn btn-primary" onclick="send('GET','/contractor/vehicles/'+v('vd-id')+'/')">Send →</button>`,
+
+'vehicle-update': `
+<div class="endpoint-header">
+  <h2>Update Vehicle</h2>
+  <div class="url-bar"><span class="method-badge PATCH method">PATCH</span><span class="path">/contractor/vehicles/{id}/</span></div>
+</div>
+${authNote()}
+<div class="field-group"><label>Vehicle ID</label><input id="vu-id" value="1"/></div>
+<div class="field-group"><label>Status</label>
+  <select id="vu-status"><option value="available">Available</option><option value="in_use">In Use</option><option value="maintenance">Maintenance</option><option value="inactive">Inactive</option></select>
+</div>
+<div class="field-group"><label>Current Location</label><input id="vu-loc" value=""/></div>
+<div class="field-group"><label>Odometer Reading (KM)</label><input id="vu-odo" value=""/></div>
+<button class="btn btn-primary" onclick="doVehicleUpdate()">Send →</button>`,
+
+'vehicle-delete': `
+<div class="endpoint-header">
+  <h2>Delete Vehicle</h2>
+  <div class="url-bar"><span class="method-badge DELETE method">DELETE</span><span class="path">/contractor/vehicles/{id}/</span></div>
+</div>
+${authNote()}
+<div class="field-group"><label>Vehicle ID</label><input id="vdel-id" value="1"/></div>
+<button class="btn btn-danger" onclick="send('DELETE','/contractor/vehicles/'+v('vdel-id')+'/')">Delete →</button>`,
+
+// ── DRIVERS ──────────────────────────────────────────────────────────────
+'driver-list': `
+<div class="endpoint-header">
+  <h2>List Drivers</h2>
+  <div class="url-bar"><span class="method-badge GET method">GET</span><span class="path">/contractor/drivers/</span></div>
+</div>
+${authNote()}
+<button class="btn btn-primary" onclick="send('GET','/contractor/drivers/')">Send →</button>`,
+
+'driver-detail': `
+<div class="endpoint-header">
+  <h2>Driver Detail</h2>
+  <div class="url-bar"><span class="method-badge GET method">GET</span><span class="path">/contractor/drivers/{id}/</span></div>
+</div>
+${authNote()}
+<div class="field-group"><label>Driver ID</label><input id="dd-id" value="1"/></div>
+<button class="btn btn-primary" onclick="send('GET','/contractor/drivers/'+v('dd-id')+'/')">Send →</button>`,
+
+'add-fleet-driver': `
+<div class="endpoint-header">
+  <h2>Add Fleet Driver</h2>
+  <div class="url-bar"><span class="method-badge POST method">POST</span><span class="path">/contractor/drivers/add-fleet-driver/</span></div>
+  <p>Link an existing driver user account to your fleet.</p>
+</div>
+${authNote()}
+<div class="field-group"><label>Driver User ID</label><input id="afd-uid" value="2"/></div>
+<button class="btn btn-primary" onclick="send('POST','/contractor/drivers/add-fleet-driver/',{driver_user_id:parseInt(v('afd-uid'))})">Send →</button>`,
+
+'register-independent': `
+<div class="endpoint-header">
+  <h2>Register as Independent Driver</h2>
+  <div class="url-bar"><span class="method-badge POST method">POST</span><span class="path">/contractor/drivers/register-independent/</span></div>
+  <p>Driver registers themselves as self-managed. Must be logged in as a driver-type user.</p>
+</div>
+${authNote()}
+<button class="btn btn-primary" onclick="send('POST','/contractor/drivers/register-independent/',{})">Send →</button>`,
+
+'assign-driver': `
+<div class="endpoint-header">
+  <h2>Assign Driver to Vehicle</h2>
+  <div class="url-bar"><span class="method-badge POST method">POST</span><span class="path">/contractor/assign-driver/</span></div>
+</div>
+${authNote()}
+<div class="field-row">
+  <div class="field-group"><label>Driver ID</label><input id="ad-did" value="1"/></div>
+  <div class="field-group"><label>Vehicle ID</label><input id="ad-vid" value="1"/></div>
+</div>
+<button class="btn btn-primary" onclick="send('POST','/contractor/assign-driver/',{driver:parseInt(v('ad-did')),vehicle:parseInt(v('ad-vid'))})">Send →</button>`,
+
+'assignment-list': `
+<div class="endpoint-header">
+  <h2>List Driver–Vehicle Assignments</h2>
+  <div class="url-bar"><span class="method-badge GET method">GET</span><span class="path">/contractor/assignments/</span></div>
+</div>
+${authNote()}
+<button class="btn btn-primary" onclick="send('GET','/contractor/assignments/')">Send →</button>`,
+
+// ── SERVICE REQUESTS ───────────────────────────────────────────────────────
+'request-create': `
+<div class="endpoint-header">
+  <h2>Create Service Request</h2>
+  <div class="url-bar"><span class="method-badge POST method">POST</span><span class="path">/consumer/requests/</span></div>
+</div>
+${authNote()}
+<div class="field-row">
+  <div class="field-group"><label>Service Type</label>
+    <select id="sr-stype"><option value="local">Local Shifting</option><option value="intercity">Intercity</option><option value="office">Office Relocation</option><option value="single_item">Single Item</option></select>
+  </div>
+  <div class="field-group"><label>Vehicle Preference</label>
+    <select id="sr-vtype"><option value="mini_truck">Mini Truck</option><option value="medium_truck">Medium Truck</option><option value="full_truck">Full Truck</option><option value="trailer">Trailer</option><option value="tempo">Tempo</option></select>
+  </div>
+</div>
+<div class="field-row">
+  <div class="field-group"><label>Cargo Type</label>
+    <select id="sr-ctype"><option value="general">General Cargo</option><option value="electronics">Electronics</option><option value="furniture">Furniture</option><option value="food">Food</option><option value="construction">Construction</option><option value="textiles">Textiles</option></select>
+  </div>
+  <div class="field-group"><label>Cargo Weight (KG)</label><input id="sr-cw" value="500"/></div>
+</div>
+<div class="field-group"><label>Pickup Address</label><input id="sr-pu" value="123 Pickup St, Mumbai"/></div>
+<div class="field-group"><label>Drop Address</label><input id="sr-dr" value="456 Drop Ave, Pune"/></div>
+<div class="field-row">
+  <div class="field-group"><label>Pickup Floor No.</label><input id="sr-pf" value="0"/></div>
+  <div class="field-group"><label>Drop Floor No.</label><input id="sr-df" value="0"/></div>
+</div>
+<div class="field-group"><label>Pickup Datetime (ISO)</label><input id="sr-dt" value="2026-05-01T09:00:00Z"/></div>
+<div class="field-group"><label>Special Notes</label><input id="sr-notes" value="Handle with care"/></div>
+<button class="btn btn-primary" onclick="doRequestCreate()">Send →</button>`,
+
+'request-list': `
+<div class="endpoint-header">
+  <h2>List My Service Requests</h2>
+  <div class="url-bar"><span class="method-badge GET method">GET</span><span class="path">/consumer/requests/list/</span></div>
+</div>
+${authNote()}
+<button class="btn btn-primary" onclick="send('GET','/consumer/requests/list/')">Send →</button>`,
+
+'request-detail': `
+<div class="endpoint-header">
+  <h2>Service Request Detail</h2>
+  <div class="url-bar"><span class="method-badge GET method">GET</span><span class="path">/consumer/requests/{id}/</span></div>
+</div>
+${authNote()}
+<div class="field-group"><label>Request ID</label><input id="rd-id" value="1"/></div>
+<button class="btn btn-primary" onclick="send('GET','/consumer/requests/'+v('rd-id')+'/')">Send →</button>`,
+
+'available-drivers': `
+<div class="endpoint-header">
+  <h2>Available Drivers for Request</h2>
+  <div class="url-bar"><span class="method-badge GET method">GET</span><span class="path">/consumer/requests/{id}/drivers/</span></div>
+  <p>Returns drivers available for the given service request's vehicle type preference.</p>
+</div>
+${authNote()}
+<div class="field-group"><label>Service Request ID</label><input id="avd-id" value="1"/></div>
+<button class="btn btn-primary" onclick="send('GET','/consumer/requests/'+v('avd-id')+'/drivers/')">Send →</button>`,
+
+// ── BOOKINGS ───────────────────────────────────────────────────────────────
+'booking-create': `
+<div class="endpoint-header">
+  <h2>Create Booking</h2>
+  <div class="url-bar"><span class="method-badge POST method">POST</span><span class="path">/consumer/bookings/</span></div>
+  <p>Consumer selects a driver from the available list to book.</p>
+</div>
+${authNote()}
+<div class="field-row">
+  <div class="field-group"><label>Service Request ID</label><input id="bc-sr" value="1"/></div>
+  <div class="field-group"><label>Driver ID</label><input id="bc-dr" value="1"/></div>
+</div>
+<div class="field-row">
+  <div class="field-group"><label>Contractor (User) ID</label><input id="bc-co" value="1"/></div>
+  <div class="field-group"><label>Vehicle ID</label><input id="bc-ve" value="1"/></div>
+</div>
+<div class="field-group"><label>Final Price (₹)</label><input id="bc-fp" value="5000"/></div>
+<button class="btn btn-primary" onclick="doBookingCreate()">Send →</button>`,
+
+'booking-list': `
+<div class="endpoint-header">
+  <h2>List My Bookings</h2>
+  <div class="url-bar"><span class="method-badge GET method">GET</span><span class="path">/consumer/bookings/list/</span></div>
+</div>
+${authNote()}
+<button class="btn btn-primary" onclick="send('GET','/consumer/bookings/list/')">Send →</button>`,
+
+'booking-detail': `
+<div class="endpoint-header">
+  <h2>Booking Detail</h2>
+  <div class="url-bar"><span class="method-badge GET method">GET</span><span class="path">/consumer/bookings/{id}/</span></div>
+</div>
+${authNote()}
+<div class="field-group"><label>Booking ID</label><input id="bkd-id" value="1"/></div>
+<button class="btn btn-primary" onclick="send('GET','/consumer/bookings/'+v('bkd-id')+'/')">Send →</button>`,
+
+'pay-advance': `
+<div class="endpoint-header">
+  <h2>Pay Advance</h2>
+  <div class="url-bar"><span class="method-badge POST method">POST</span><span class="path">/consumer/bookings/{id}/pay-advance/</span></div>
+  <p>Marks the advance payment as paid and moves booking to 'awaiting_acceptance'.</p>
+</div>
+${authNote()}
+<div class="field-group"><label>Booking ID</label><input id="pa-id" value="1"/></div>
+<button class="btn btn-primary" onclick="send('POST','/consumer/bookings/'+v('pa-id')+'/pay-advance/',{})">Send →</button>`,
+
+'pay-full': `
+<div class="endpoint-header">
+  <h2>Pay Full Amount</h2>
+  <div class="url-bar"><span class="method-badge POST method">POST</span><span class="path">/consumer/bookings/{id}/pay-full/</span></div>
+  <p>Marks full payment as complete. Advance must be paid first.</p>
+</div>
+${authNote()}
+<div class="field-group"><label>Booking ID</label><input id="pf-id" value="1"/></div>
+<button class="btn btn-primary" onclick="send('POST','/consumer/bookings/'+v('pf-id')+'/pay-full/',{})">Send →</button>`,
+
+'rating-create': `
+<div class="endpoint-header">
+  <h2>Create Rating</h2>
+  <div class="url-bar"><span class="method-badge POST method">POST</span><span class="path">/consumer/ratings/</span></div>
+  <p>Rate a driver after trip completion.</p>
+</div>
+${authNote()}
+<div class="field-row">
+  <div class="field-group"><label>Booking ID</label><input id="rat-bk" value="1"/></div>
+  <div class="field-group"><label>Rated User ID</label><input id="rat-ru" value="2"/></div>
+</div>
+<div class="field-row">
+  <div class="field-group"><label>Rating (1–5)</label><input id="rat-r" type="number" min="1" max="5" value="5"/></div>
+</div>
+<div class="field-group"><label>Review</label><textarea id="rat-rev">Great service, very professional!</textarea></div>
+<button class="btn btn-primary" onclick="doRatingCreate()">Send →</button>`,
+
+};
+
+function authNote() {
+  return `<div class="note"><strong>🔐 Requires Authentication</strong>Login first to set the Bearer token, or paste your token in the Login page.</div>`;
+}
+function tokenDisplay() {
+  return `<div class="divider"></div>
+<div class="section-title">Stored Token</div>
+<div class="token-box" id="token-display"><strong>Access Token</strong>${token || 'None — login first'}</div>`;
+}
+
+// ── HANDLERS ──────────────────────────────────────────────────────────────
+async function doRegisterConsumer() {
+  const body = { first_name:v('rc-first'), last_name:v('rc-last'), email:v('rc-email'), password:v('rc-pass'), password2:v('rc-pass2'), user_type:'consumer' };
+  if (v('rc-phone')) body.phone_number = v('rc-phone');
+  await send('POST', '/auth/register/consumer/', body);
+}
+async function doRegisterContractor() {
+  const body = { first_name:v('rco-first'), last_name:v('rco-last'), email:v('rco-email'), password:v('rco-pass'), password2:v('rco-pass2'), user_type:'contractor' };
+  if (v('rco-phone')) body.phone_number = v('rco-phone');
+  await send('POST', '/auth/register/contractor/', body);
+}
+async function doLogin() {
+  const data = await send('POST', '/auth/login/', { email: v('li-email'), password: v('li-pass') });
+  if (data && data.access) {
+    token = data.access;
+    refreshToken = data.refresh;
+    localStorage.setItem('echoaccess', token);
+    localStorage.setItem('echorefresh', refreshToken);
+    updateAuthStatus();
+    // Refresh page content to show new token
+    show('login');
+  }
+}
+async function doTokenRefresh() {
+  const data = await send('POST', '/auth/token/refresh/', { refresh: v('tr-refresh') });
+  if (data && data.access) {
+    token = data.access;
+    localStorage.setItem('echoaccess', token);
+    updateAuthStatus();
+  }
+}
+async function doMe() { await send('GET', '/auth/me/'); }
+async function doMeUpdate() {
+  const body = {};
+  if (v('mu-first')) body.first_name = v('mu-first');
+  if (v('mu-last')) body.last_name = v('mu-last');
+  if (v('mu-phone')) body.phone_number = v('mu-phone');
+  await send('PATCH', '/auth/me/', body);
+}
+async function doContractorProfile() {
+  const body = { contractor_type: v('cp-type'), business_address: v('cp-addr'), city: v('cp-city'), state: v('cp-state'), pincode: v('cp-pin') };
+  if (v('cp-company')) body.company_name = v('cp-company');
+  if (v('cp-gst')) body.gst_number = v('cp-gst');
+  if (v('cp-reg')) body.company_registration_number = v('cp-reg');
+  await send('POST', '/auth/contractor/complete-profile/', body);
+}
+async function doVehicleCreate() {
+  const body = { registration_number: v('vc-reg'), vehicle_type: v('vc-type'), model_make: v('vc-model'), fuel_type: v('vc-fuel'), capacity_weight: v('vc-cap') };
+  if (v('vc-gps')) body.gps_device_id = v('vc-gps');
+  if (v('vc-len')) body.length_feet = v('vc-len');
+  if (v('vc-wid')) body.width_feet = v('vc-wid');
+  if (v('vc-hei')) body.height_feet = v('vc-hei');
+  await send('POST', '/contractor/vehicles/', body);
+}
+async function doVehicleUpdate() {
+  const body = { status: v('vu-status') };
+  if (v('vu-loc')) body.current_location = v('vu-loc');
+  if (v('vu-odo')) body.odometer_reading = parseInt(v('vu-odo'));
+  await send('PATCH', '/contractor/vehicles/' + v('vu-id') + '/', body);
+}
+async function doRequestCreate() {
+  const body = {
+    service_type: v('sr-stype'), vehicle_type_preference: v('sr-vtype'),
+    cargo_type: v('sr-ctype'), cargo_weight: v('sr-cw'),
+    pickup_address: v('sr-pu'), drop_address: v('sr-dr'),
+    pickup_floor_number: parseInt(v('sr-pf')) || 0,
+    drop_floor_number: parseInt(v('sr-df')) || 0,
+    pickup_datetime: v('sr-dt'), special_notes: v('sr-notes')
+  };
+  await send('POST', '/consumer/requests/', body);
+}
+async function doBookingCreate() {
+  const body = {
+    service_request: parseInt(v('bc-sr')), driver: parseInt(v('bc-dr')),
+    contractor: parseInt(v('bc-co')), vehicle: parseInt(v('bc-ve')),
+    final_price: v('bc-fp')
+  };
+  await send('POST', '/consumer/bookings/', body);
+}
+async function doRatingCreate() {
+  const body = { booking: parseInt(v('rat-bk')), rated_user: parseInt(v('rat-ru')), rating: parseInt(v('rat-r')), review: v('rat-rev') };
+  await send('POST', '/consumer/ratings/', body);
+}
+
+// Load default page
+show('login');
+</script>
+</body>
+</html>

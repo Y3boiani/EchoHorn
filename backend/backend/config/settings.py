@@ -26,6 +26,8 @@ INSTALLED_APPS = [
     # Local apps
     'accounts',
     'core',
+    'consumer',
+    'contractor',
 ]
 
 MIDDLEWARE = [
@@ -127,6 +129,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React default
     "http://localhost:5173",  # Vite default
     "http://127.0.0.1:3000",
+    "http://localhost:8080",  # Test frontend
+    "http://127.0.0.1:8080",
+    "null",                   # file:// origin (browser opened locally)
 ]
 
 CORS_ALLOW_CREDENTIALS = True
